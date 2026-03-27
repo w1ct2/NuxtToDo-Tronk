@@ -13,7 +13,7 @@
 
       <div class="task-row__actions">
         <button type="button" class="task-row__action">Редакт.</button>
-        <button type="button" class="task-row__action is-danger">Удалить</button>
+        <button type="button" class="task-row__action">Удалить</button>
       </div>
 
       <p class="task-row__author">{{ task.createdBy }}</p>
@@ -123,10 +123,6 @@ const formattedDate = computed(() => {
   font: inherit;
   font-size: 13px;
   cursor: pointer;
-}
-
-.task-row__action.is-danger {
-  color: #c2410c;
 }
 
 .task-row__author {

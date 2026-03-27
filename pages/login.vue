@@ -19,7 +19,8 @@
                 autocomplete="current-password"
                 :error="passwordError">
             </AppInput>
-            <AppButton class="login__btn" type="submit" variant="secondary">Войти</AppButton>
+            <AppButton class="login__btn" type="submit" variant="secondary"">Войти</AppButton>
+            <p v-if="apiError" class="error">{{ apiError }}</p>
         </form>
     </section>
 </template>
@@ -31,12 +32,14 @@ import AppInput from '~/components/UI/AppInput.vue';
 definePageMeta({
     layout: 'auth',
 })
+const {login} = useAuth()
 
 const userEmail = ref('')
 const userPassword = ref('')
 
 const emailError = ref('')
 const passwordError = ref('')
+const apiError = ref('')
 
 const validateLoginForm = () => {
     emailError.value = ''
@@ -61,17 +64,21 @@ const validateLoginForm = () => {
     return !emailError.value && !passwordError.value
 }
 
-const loginValidator = () => {
+const loginValidator = async () => {
     if (!validateLoginForm()) {
         return
     }
 
-    // Тут можно вызвать API авторизации
-    console.log('Форма валидна:', {
-        email: userEmail.value.trim(),
-        passwordLength: userPassword.value.length,
-    })
+    try {
+        await login(
+            userEmail.value,
+            userPassword.value
+        )
+    } catch(err) {
+        apiError.value = 'Неверный имейл или пароль'
+    }
 }
+
 </script>
 
 <style lang="scss" scoped>
