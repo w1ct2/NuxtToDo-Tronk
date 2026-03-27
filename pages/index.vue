@@ -1,11 +1,9 @@
 <template>
-  <div id="root">
-   <NuxtPage />
-  </div>
+   <h1>Home</h1>
 </template>
 
 <script lang="ts">
-
+definePageMeta({middleware: 'is-auth'})
 </script>
 
 <style lang="scss" scoped>
