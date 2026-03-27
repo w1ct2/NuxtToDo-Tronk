@@ -19,7 +19,7 @@
                 autocomplete="current-password"
                 :error="passwordError">
             </AppInput>
-            <AppButton class="login__btn" type="submit" variant="primary">Войти</AppButton>
+            <AppButton class="login__btn" type="submit" variant="secondary">Войти</AppButton>
         </form>
     </section>
 </template>
@@ -27,6 +27,10 @@
 <script setup lang="ts">
 import AppButton from '~/components/UI/AppButton.vue';
 import AppInput from '~/components/UI/AppInput.vue';
+
+definePageMeta({
+    layout: 'auth',
+})
 
 const userEmail = ref('')
 const userPassword = ref('')

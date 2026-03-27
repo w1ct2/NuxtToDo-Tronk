@@ -22,6 +22,7 @@
 }
 * {
     box-sizing: border-box;
+    margin: 0;
 }
 #root {
     width: 1126px;
@@ -59,7 +60,7 @@ h1,
 h2 {
     font-family: var(--heading);
     font-weight: 500;
-    color: var(--text-h);
+    // color: var(--text-h);
     text-align: center;
 }
   
@@ -76,13 +77,9 @@ h2 {
     font-size: 24px;
     line-height: 118%;
     letter-spacing: -0.24px;
-    margin: 0 0 8px;
     @media (max-width: 1024px) {
       font-size: 20px;
     }
-}
-p {
-    margin: 0;
 }
   
 .button {

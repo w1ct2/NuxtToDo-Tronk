@@ -1,13 +1,7 @@
 <template>
-  <div id="root">
-   <NuxtPage />
-  </div>
+  <NuxtLayout>
+    <NuxtPage />
+  </NuxtLayout>
 </template>
 
-<script lang="ts">
-
-</script>
-
-<style lang="scss" scoped>
-
-</style>
+<script setup lang="ts"></script>
