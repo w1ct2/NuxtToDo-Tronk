@@ -13,9 +13,9 @@
 </template>
 
 <script setup lang="ts">
-import TaskList from '~/composables/components/pages/index/TaskList.vue';
-import TaskTabs from '~/composables/components/pages/index/TaskTabs.vue';
-import type { TaskFilter, TaskTab, TodoTask } from '~/composables/components/pages/index/types';
+import TaskList from '~/components/pages/index/TaskList.vue';
+import TaskTabs from '~/components/pages/index/TaskTabs.vue';
+import type { TaskFilter, TaskTab, TodoTask } from '~/components/pages/index/types';
 
 definePageMeta({
   middleware: 'is-auth',

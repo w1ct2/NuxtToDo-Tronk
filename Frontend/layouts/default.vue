@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import AppHeader from '~/composables/components/Header/AppHeader.vue';
+import AppHeader from '~/components/Header/AppHeader.vue';
 </script>
 
 <style scoped lang="scss">

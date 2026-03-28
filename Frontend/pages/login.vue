@@ -68,8 +68,8 @@
 </template>
 
 <script setup lang="ts">
-import AppButton from '~/composables/components/UI/AppButton.vue';
-import AppInput from '~/composables/components/UI/AppInput.vue';
+import AppButton from '~/components/UI/AppButton.vue';
+import AppInput from '~/components/UI/AppInput.vue';
 
 definePageMeta({
     layout: 'auth',

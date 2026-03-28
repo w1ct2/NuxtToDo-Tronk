@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import AppButton from '~/composables/components/UI/AppButton.vue';
+import AppButton from '~/components/UI/AppButton.vue';
 
 </script>
 
