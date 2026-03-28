@@ -62,7 +62,7 @@ import AppPopup from '../UI/AppPopup.vue';
 import AppInput from '../UI/AppInput.vue';
 import AppSelect from '../UI/AppSelect.vue';
 import type { TaskPriority } from '../pages/index/types';
-const isActivePopup = ref(true)
+const isActivePopup = ref(false)
 const {createTask} = useTasks()
 
 const author = ref('')
