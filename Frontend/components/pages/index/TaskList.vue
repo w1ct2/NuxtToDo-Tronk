@@ -6,7 +6,12 @@
     </header>
 
     <ul class="task-list-board__list">
-      <TaskItem v-for="task in tasks" :key="task.id" :task="task" />
+      <TaskItem
+        v-for="task in tasks"
+        :key="task.id"
+        :task="task"
+        @deleted="emit('delete-task', $event)"
+      />
 
       <li v-if="!tasks.length" class="task-list-board__empty">
         По выбранному фильтру задач пока нет.
@@ -19,6 +24,10 @@
 import type { PropType } from 'vue';
 import TaskItem from './TaskItem.vue';
 import type { TodoTask } from './types';
+
+const emit = defineEmits<{
+  (e: 'delete-task', id: number): void;
+}>();
 
 defineProps({
   tasks: {

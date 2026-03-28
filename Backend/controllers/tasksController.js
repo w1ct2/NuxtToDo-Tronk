@@ -3,13 +3,15 @@ import tasks from "../data/tasks.js";
 const ALLOWED_PRIORITIES = ["low", "medium", "high"];
 
 export const getTasks = async (req, res) => {
-  const { status, search } = req.query;
+  const { status, search } = req.params
   let result = [...tasks];
 
   if (status === "completed") {
     result = result.filter((task) => task.isCompleted);
   } else if (status === "active") {
     result = result.filter((task) => !task.isCompleted);
+  } else if (status === "all") {
+    result = result
   }
 
   if (search) {

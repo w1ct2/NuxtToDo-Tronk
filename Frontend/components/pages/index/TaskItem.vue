@@ -1,5 +1,5 @@
 <template>
-  <li class="task-row" :class="{ 'is-completed': task.isCompleted }">
+  <li class="task-row" :class="{ 'is-completed': task.isCompleted && isCompleted }">
     <div class="task-row__main">
       <button
         type="button"
@@ -13,7 +13,7 @@
 
       <div class="task-row__actions">
         <button type="button" class="task-row__action">Редакт.</button>
-        <button type="button" class="task-row__action">Удалить</button>
+        <button type="button" class="task-row__action" @click="handleDelete">Удалить</button>
       </div>
 
       <p class="task-row__author">{{ task.createdBy }}</p>
@@ -28,7 +28,7 @@
       </div>
 
       <label class="task-row__checkbox" aria-label="Статус выполнения">
-        <input type="checkbox" :checked="task.isCompleted" disabled>
+        <input type="checkbox" :checked="task.isCompleted" @click="updateIsCopleted">
       </label>
     </div>
 
@@ -51,7 +51,13 @@ const props = defineProps({
     required: true,
   },
 });
+const emit = defineEmits<{
+  (e: 'deleted', id: number): void;
+}>();
 
+const {updateTask, deleteTask} = useTasks()
+
+const isCompleted = ref(props.task.isCompleted)
 const isExpanded = ref(false);
 
 const priorityLabel = computed(() => {
@@ -75,6 +81,25 @@ const formattedDate = computed(() => {
     year: 'numeric',
   }).format(date);
 });
+
+const updateIsCopleted = () => {
+  isCompleted.value = !isCompleted.value
+  updateTask({
+    id: props.task.id,
+    title: props.task.title,
+    priority: props.task.priority,
+    description: props.task.description,
+    dueDate: props.task.dueDate,
+    createdBy: props.task.createdBy,
+
+    isCompleted: isCompleted.value, // <-- вотт
+  })
+}
+
+const handleDelete = async () => {
+  await deleteTask(props.task);
+  emit('deleted', props.task.id);
+};
 </script>
 
 <style scoped lang="scss">
