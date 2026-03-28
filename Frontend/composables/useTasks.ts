@@ -2,28 +2,56 @@ import type { TaskFilter, TodoTask } from "~/components/pages/index/types"
 
 export const useTasks = () => {
     const { $api } = useNuxtApp()
+    const tasks = useState<TodoTask[]>('tasks:list', () => [])
+    const isLoading = useState<boolean>('tasks:loading', () => false)
+    const error = useState<string | null>('tasks:error', () => null)
 
-    const getTasks = async (status: TaskFilter = "all", search = "") => {
-        const res = await $api.get<TodoTask[]>('/tasks', {
-            params: { status, search },
-        })
-        return res.data
+    const loadTasks = async (status: TaskFilter = "all", search = "") => {
+        isLoading.value = true
+        error.value = null
+
+        try {
+            const res = await $api.get<TodoTask[]>('/tasks', {
+                params: { status, search },
+            })
+
+            tasks.value = res.data
+            return res.data
+        } catch (e) {
+            error.value = 'Не удалось загрузить задачи'
+            throw e
+        } finally {
+            isLoading.value = false
+        }
     }
 
     const createTask = async (task: TodoTask) => {
         const res = await $api.post('/tasks', task)
+        await loadTasks()
         return res.data
     }
 
-    const deleteTask = async (task: TodoTask) => {
-        const res = await $api.delete(`/tasks/${task.id}`)
+    const deleteTask = async (taskOrId: TodoTask | number) => {
+        const taskId = typeof taskOrId === 'number' ? taskOrId : taskOrId.id // проверка передается напрямую айди или через обьект
+        const res = await $api.delete(`/tasks/${taskId}`)
+        await loadTasks()
         return res.data
     }
 
     const updateTask = async (task: TodoTask) => {
         const res = await $api.put(`/tasks/${task.id}`, task)
+        await loadTasks()
         return res.data
     }
 
-    return { getTasks, createTask, deleteTask, updateTask}
+    return {
+        tasks,
+        isLoading,
+        error,
+        loadTasks,
+        getTasks: loadTasks,
+        createTask,
+        deleteTask,
+        updateTask,
+    }
 }

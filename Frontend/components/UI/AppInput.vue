@@ -79,7 +79,7 @@ type InputMode =
 const props = defineProps({
   modelValue: { type: [String, Number], default: null },
   as: { type: String, default: 'input' }, // 'input' | 'textarea'
-  type: { type: String as () => InputType, default: 'text' as InputType }, // HTML input type
+  type: { type: String as () => InputType, default: 'text' as InputType }, 
   label: { type: String, default: undefined },
   placeholder: { type: String, default: '' },
   name: { type: String, default: undefined },
@@ -139,7 +139,7 @@ function onInput(e: Event) {
   align-items: center;
   gap: 10px;
   padding: 0 12px;
-  height: 44px;
+  min-height: 44px;
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--bg);

@@ -1,5 +1,5 @@
 <template>
-  <li class="task-row" :class="{ 'is-completed': task.isCompleted && isCompleted }">
+  <li class="task-row" :class="{ 'is-completed': task.isCompleted }">
     <div class="task-row__main">
       <button
         type="button"
@@ -18,7 +18,7 @@
 
       <p class="task-row__author">{{ task.createdBy }}</p>
 
-      <time class="task-row__date" :datetime="task.dueDate">{{ formattedDate }}</time>
+      <time class="task-row__date" :datetime="dateTimeValue">{{ formattedDate }}</time>
 
       <span class="task-row__priority" :class="`is-${task.priority}`">{{ priorityLabel }}</span>
 
@@ -57,7 +57,6 @@ const emit = defineEmits<{
 
 const {updateTask, deleteTask} = useTasks()
 
-const isCompleted = ref(props.task.isCompleted)
 const isExpanded = ref(false);
 
 const priorityLabel = computed(() => {
@@ -72,8 +71,30 @@ const priorityLabel = computed(() => {
   return 'Низкий';
 });
 
+const parseTaskDate = (value: string) => {
+  const isoPattern = /^\d{4}-\d{2}-\d{2}$/;
+  if (isoPattern.test(value)) {
+    const isoDate = new Date(`${value}T00:00:00`);
+    return Number.isNaN(isoDate.getTime()) ? null : isoDate;
+  }
+
+  const ruPattern = /^(\d{2})\.(\d{2})\.(\d{4})$/;
+  const match = value.match(ruPattern);
+  if (match) {
+    const [, day, month, year] = match;
+    const ruDate = new Date(`${year}-${month}-${day}T00:00:00`);
+    return Number.isNaN(ruDate.getTime()) ? null : ruDate;
+  }
+
+  const fallbackDate = new Date(value);
+  return Number.isNaN(fallbackDate.getTime()) ? null : fallbackDate;
+}
+
 const formattedDate = computed(() => {
-  const date = new Date(props.task.dueDate);
+  const date = parseTaskDate(props.task.dueDate);
+  if (!date) {
+    return props.task.dueDate;
+  }
 
   return new Intl.DateTimeFormat('ru-RU', {
     day: '2-digit',
@@ -82,17 +103,19 @@ const formattedDate = computed(() => {
   }).format(date);
 });
 
-const updateIsCopleted = () => {
-  isCompleted.value = !isCompleted.value
-  updateTask({
-    id: props.task.id,
-    title: props.task.title,
-    priority: props.task.priority,
-    description: props.task.description,
-    dueDate: props.task.dueDate,
-    createdBy: props.task.createdBy,
+const dateTimeValue = computed(() => {
+  const date = parseTaskDate(props.task.dueDate);
+  if (!date) {
+    return undefined;
+  }
 
-    isCompleted: isCompleted.value, // <-- вотт
+  return date.toISOString().slice(0, 10);
+});
+
+const updateIsCopleted = async () => {
+  await updateTask({
+    ...props.task,
+    isCompleted: !props.task.isCompleted,
   })
 }
 

@@ -8,31 +8,25 @@
       />
     </nav>
 
-    <TaskList :tasks="filteredTasks" @delete-task="handleTaskDelete" />
+    <TaskList :tasks="filteredTasks" />
   </section>
 </template>
 
 <script setup lang="ts">
 import TaskList from '~/components/pages/index/TaskList.vue';
 import TaskTabs from '~/components/pages/index/TaskTabs.vue';
-import type { TaskFilter, TaskTab, TodoTask } from '~/components/pages/index/types';
+import type { TaskFilter, TaskTab } from '~/components/pages/index/types';
 
 definePageMeta({
   middleware: 'is-auth',
 });
 
-const {getTasks} = useTasks()
-const loadTasks = async () => {
-  tasks.value = await getTasks(activeTab.value, searchQuery.value)
+const { tasks, loadTasks: loadTasksFromServer } = useTasks()
+const loadPageTasks = async () => {
+  await loadTasksFromServer(activeTab.value, searchQuery.value)
 }
 const activeTab = ref<TaskFilter>('all');
 const searchQuery = ref('')
-
-const tasks = ref<TodoTask[]>([]);
-
-const handleTaskDelete = (taskId: number) => {
-  tasks.value = tasks.value.filter((task) => task.id !== taskId);
-};
 
 const allTabs: TaskTab[] = [
   { key: 'all', label: 'Все задачи' },
@@ -70,8 +64,7 @@ const tabsWithCounts = computed(() => {
 });
 
 onMounted(async()=>{
-  await loadTasks()
-  console.log(tasks.value)
+  await loadPageTasks()
 })
 </script>
 
