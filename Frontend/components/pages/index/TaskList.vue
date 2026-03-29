@@ -14,7 +14,7 @@
       />
 
       <li v-if="!tasks.length" class="task-list-board__empty">
-        По выбранному фильтру задач пока нет.
+        По выбранному фильтру и поиску задач пока нет.
       </li>
     </ul>
   </section>

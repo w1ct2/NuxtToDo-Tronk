@@ -5,7 +5,7 @@ const tasks = [
         description: 'Собрать финальную версию макета с состояниями пустого списка, загрузки и ошибок.',
         dueDate: '30.03.2026',
         isCompleted: false,
-        createdBy: 'Анна.',
+        createdBy: 'Анна',
         priority: 'high',
     },
     {
@@ -32,7 +32,7 @@ const tasks = [
         description: 'Проверить страницу на ширине 320-430px и выровнять блоки действий в карточках задач.',
         dueDate: '29.03.2026',
         isCompleted: true,
-        createdBy: 'Олег',
+        createdBy: 'Анна',
         priority: 'high',
     },
     {
@@ -50,7 +50,7 @@ const tasks = [
         description: 'Протестировать сценарий удаления задачи и обновление списка без перезагрузки страницы.',
         dueDate: '01.04.2026',
         isCompleted: true,
-        createdBy: 'Павел',
+        createdBy: 'Мария',
         priority: 'low',
     },
     {
@@ -59,7 +59,7 @@ const tasks = [
         description: 'Добавить проверку отображения длинных заголовков и описаний в карточке задачи.',
         dueDate: '07.04.2026',
         isCompleted: false,
-        createdBy: 'Светлана',
+        createdBy: 'Дмитрий',
         priority: 'high',
     },
     {
