@@ -6,6 +6,24 @@
 - Backend: `Express` + `JWT` + `bcryptjs`
 - Хранилище данных: in-memory массивы (без БД, данные сбрасываются после перезапуска сервера)
 
+## Презентация функционала
+
+![Вход](Frontend/assets/readme/login.png)
+
+![Валидация полей входа](Frontend/assets/readme/login-validation.png)
+
+![Регистрация / Валидация](Frontend/assets/readme/registrration-validation.png)
+
+![Основная страница](Frontend/assets/readme/main-page.png)
+
+![Поиск](Frontend/assets/readme/search.png)
+
+![Сортировка](Frontend/assets/readme/sort.png)
+
+![Добавление задачи](Frontend/assets/readme/add-task.png)
+
+![Редактирование задачи](Frontend/assets/readme/update-task.png)
+
 ## Что умеет проект
 
 - Регистрация и вход пользователя
