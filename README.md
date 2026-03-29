@@ -8,20 +8,28 @@
 
 ## Презентация функционала
 
+Страница входа
 ![Вход](Frontend/assets/readme/login.png)
 
+Валидация полей
 ![Валидация полей входа](Frontend/assets/readme/login-validation.png)
 
+Страница регистрации
 ![Регистрация / Валидация](Frontend/assets/readme/registrration-validation.png)
 
+Основная страница
 ![Основная страница](Frontend/assets/readme/main-page.png)
 
+Поиск
 ![Поиск](Frontend/assets/readme/search.png)
 
+Сортировка (по приоритету)
 ![Сортировка](Frontend/assets/readme/sort.png)
 
+Добавление задачи
 ![Добавление задачи](Frontend/assets/readme/add-task.png)
 
+Редактирование задачи
 ![Редактирование задачи](Frontend/assets/readme/update-task.png)
 
 ## Что умеет проект
