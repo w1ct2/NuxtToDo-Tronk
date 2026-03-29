@@ -200,4 +200,12 @@ onMounted(async()=>{
   margin-left: auto;
   margin-right: 15px;
 }
+@media (max-width: 768px) {
+  .task-page__header {
+    flex-direction: column;
+  }
+  .task-page__select {
+    margin-left: 0;
+  }
+}
 </style>
