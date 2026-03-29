@@ -4,7 +4,7 @@
 
 - Frontend: `Nuxt 3` + `Vue 3` + `TypeScript` + `Axios`
 - Backend: `Express` + `JWT` + `bcryptjs`
-- Хранилище данных: in-memory массивы (без БД, данные сбрасываются после перезапуска сервера)
+- Хранилище данных: in-memory массивы
 
 ## Презентация функционала
 
