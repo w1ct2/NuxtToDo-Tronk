@@ -12,7 +12,7 @@
       </button>
 
       <div class="task-row__actions">
-        <button type="button" class="task-row__action">Редакт.</button>
+        <button type="button" class="task-row__action" @click="isActivePopup = true">Редакт.</button>
         <button type="button" class="task-row__action" @click="handleDelete">Удалить</button>
       </div>
 
@@ -37,13 +37,68 @@
         {{ task.description }}
       </div>
     </transition>
+
+    <AppPopup v-model="isActivePopup" content-class="app-header__popup">
+        <template #header>
+          Редактировать задачу
+        </template>
+        <template #default>
+          <AppInput
+            placeholder="Автор задачи" 
+            v-model="author"
+            :error="authorError"
+          />
+          <AppInput 
+            placeholder="Название задачи" 
+            v-model="title"
+            :error="titleError"
+          />
+          <AppInput 
+            placeholder="Описание задачи" 
+            v-model="description" 
+            as="textarea" 
+            style="height: 150px;"
+            :error="descriptionError"
+          />
+          <AppSelect
+            v-model="priority"
+            label="Приоритет"
+            :options="[
+              { label: 'Средний', value: 'medium' },
+              { label: 'Высокий', value: 'high' },
+              { label: 'Низкий', value: 'low' }
+            ]"
+          />
+          <AppInput
+            v-model="taskDate"
+            placeholder="xx.xx.xxxx"
+            inputmode="numeric"
+            maxlength="10"
+            :error="taskDateError"
+            @update:model-value="onTaskDateInput"
+            @keydown="onTaskDateKeydown"
+          >
+            <template #left>Дата</template>
+          </AppInput>
+        </template>
+        <template #footer>
+          <AppButton @click="isActivePopup = false">Отмена</AppButton>
+          <AppButton @click="onUpdateTask">Сохранить</AppButton>
+        </template>
+      </AppPopup>
   </li>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import AppButton from '~/components/UI/AppButton.vue';
+import AppPopup from '~/components/UI/AppPopup.vue';
+import AppInput from '~/components/UI/AppInput.vue';
+import AppSelect from '~/components/UI/AppSelect.vue';
 import type { PropType } from 'vue';
-import type { TodoTask } from './types';
+import type { TaskPriority, TodoTask } from './types';
+
+const isActivePopup = ref(false)
 
 const props = defineProps({
   task: {
@@ -123,6 +178,142 @@ const handleDelete = async () => {
   await deleteTask(props.task);
   emit('deleted', props.task.id);
 };
+// Логика модалки редактирования
+const author = ref(props.task.createdBy)
+const authorError = ref('')
+const title = ref(props.task.title)
+const titleError = ref('')
+const description = ref(props.task.description)
+const descriptionError = ref('')
+const taskDate = ref(props.task.dueDate)
+const taskDateError = ref('')
+const priority = ref<TaskPriority>('medium')
+
+const allowedControlKeys = new Set([
+  'Backspace',
+  'Delete',
+  'Tab',
+  'ArrowLeft',
+  'ArrowRight',
+  'Home',
+  'End',
+])
+
+const formatDateValue = (value: string) => {
+  const digits = value.replace(/\D/g, '').slice(0, 8)
+  const day = digits.slice(0, 2)
+  const month = digits.slice(2, 4)
+  const year = digits.slice(4, 8)
+
+  return [day, month, year].filter(Boolean).join('.')
+}
+
+const toIsoDate = (value: string) => {
+  const [day = '', month = '', year = ''] = value.split('.')
+  if (day.length !== 2 || month.length !== 2 || year.length !== 4) {
+    return ''
+  }
+
+  return `${year}-${month}-${day}`
+}
+
+const validateTaskDate = (value: string) => {
+  if (!value) {
+    return ''
+  }
+
+  const [dayPart = '', monthPart = ''] = value.split('.')
+
+  if (dayPart.length === 2) {
+    const day = Number(dayPart)
+    if (day < 1 || day > 31) {
+      return 'День должен быть в диапазоне 01-31'
+    }
+  }
+
+  if (monthPart.length === 2) {
+    const month = Number(monthPart)
+    if (month < 1 || month > 12) {
+      return 'Месяц должен быть в диапазоне 01-12'
+    }
+  }
+
+  return ''
+}
+
+const onTaskDateKeydown = (event: KeyboardEvent) => {
+  if (event.metaKey || event.ctrlKey || event.altKey) {
+    return
+  }
+
+  if (allowedControlKeys.has(event.key)) {
+    return
+  }
+
+  if (!/^\d$/.test(event.key)) {
+    event.preventDefault()
+  }
+}
+
+const onTaskDateInput = (value: string | number | null) => {
+  const formatted = formatDateValue(String(value ?? ''))
+  taskDate.value = formatted
+  taskDateError.value = validateTaskDate(formatted)
+}
+
+const toDisplayDate = (value: string) => {
+  const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (!isoMatch) {
+    return value
+  }
+
+  const [, year, month, day] = isoMatch
+  return `${day}.${month}.${year}`
+}
+
+const onUpdateTask = async () => {
+  authorError.value = ''
+  titleError.value = ''
+  descriptionError.value = ''
+  taskDateError.value = validateTaskDate(taskDate.value)
+
+  let hasError = false
+
+  if (!author.value) {
+    authorError.value = "Автор обязателен"
+    hasError = true
+  }
+  if (!title.value) {
+    titleError.value = "Название обязательно"
+    hasError = true
+  }
+  if (!description.value) {
+    descriptionError.value = "Описание обязательно"
+    hasError = true
+  }
+  if (!taskDate.value || !/^\d{2}\.\d{2}\.\d{4}$/.test(taskDate.value) || taskDateError.value) {
+    taskDateError.value = "Неправильная дата"
+    hasError = true
+  }
+
+  if (hasError) {
+    return
+  }
+
+  const task = {
+    ...props.task,
+
+    title: title.value,
+    description: description.value,
+    createdBy: author.value,
+    priority: priority.value,
+    dueDate: toIsoDate(taskDate.value),
+  }
+
+  await updateTask(task)
+
+  isActivePopup.value = false
+}
 </script>
 
 <style scoped lang="scss">
