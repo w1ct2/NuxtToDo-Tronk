@@ -86,7 +86,7 @@ JWT_SECRET=myjwtkey
 ```env
 NUXT_PUBLIC_API_BASE=http://localhost:5001/api
 ```
-
+- При возникновении проблем  - на клиенте и сервере лежат .env.example
 - `NUXT_PUBLIC_API_BASE` - базовый URL API для axios-клиента на фронте
 
 ## Установка зависимостей
