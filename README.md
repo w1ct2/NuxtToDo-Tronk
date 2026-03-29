@@ -391,38 +391,6 @@ Authorization: Bearer <token>
 
 Успех/ошибки аналогичны `GET /api/auth/me`.
 
-## Примеры запросов через curl
-
-### Регистрация
-
-```bash
-curl -X POST http://localhost:5001/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"email":"user@example.com","password":"123456"}'
-```
-
-### Логин
-
-```bash
-curl -X POST http://localhost:5001/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"user@example.com","password":"123456"}'
-```
-
-### Получение задач
-
-```bash
-curl http://localhost:5001/api/tasks
-```
-
-### Создание задачи
-
-```bash
-curl -X POST http://localhost:5001/api/tasks \
-  -H "Content-Type: application/json" \
-  -d '{"title":"Task","description":"Desc","dueDate":"2026-04-01","isCompleted":false,"createdBy":"Alex","priority":"low"}'
-```
-
 ## Как работает авторизация во frontend
 
 - JWT сохраняется в `localStorage` под ключом `token`
