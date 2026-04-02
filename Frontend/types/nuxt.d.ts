@@ -1,12 +1,12 @@
 import type { AxiosInstance } from "axios"
 
-declare module "#app" {
+declare module "#app" { // Типы для NuxtApp
     interface NuxtApp {
         $api: AxiosInstance
     }
 }
 
-declare module "vue" {
+declare module "vue" { // Типы для Vue
     interface ComponentCustomProperties {
         $api: AxiosInstance
     }

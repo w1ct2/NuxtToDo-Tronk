@@ -1,18 +1,24 @@
+<!-- Основная страница, список задач -->
 <template>
   <section class="task-page">
+    <!-- Секция настройки листа, фильтрация/ поиск/ сортировка -->
     <nav class="task-page__header">
+      <!-- Фильтрация (Все/ Активные / Выполненные) -->
       <TaskTabs
         :tabs="tabsWithCounts"
         :active-tab="activeTab"
         @change="(value) => (activeTab = value)"
       />
+      <!-- Поиск по заголовку/ описанию /автору -->
       <AppInput placeholder="Поиск" type="text" class="task-page__search" v-model="searchQuery"></AppInput>
+      <!-- Выбор сортировки (Автор, приоритет, дата, название)-->
       <AppSelect 
         class="task-page__select"
         :options="sortOptions"
         v-model="sortQuery" 
       />
     </nav>
+    <!-- В лист попадает массив с несколькими этапами обработки, сначала фильтрация (all, active, completed), потом по поиску (searchQuery), потом сортировка -->
     <TaskList :tasks="sortedTasks" />
   </section>
 </template>
@@ -26,31 +32,35 @@ import AppSelect from '~/components/UI/AppSelect.vue';
 import useDebounce from '~/composables/useDebounce';
 
 definePageMeta({
-  middleware: 'is-auth',
+  middleware: 'is-auth', // Мидлвэйр для проверки авторизации
 });
 
 const { tasks, loadTasks: loadTasksFromServer } = useTasks()
-const loadPageTasks = async () => {
+const loadPageTasks = async () => {  // Подгрузка задач с сервера
   await loadTasksFromServer()
 }
-const activeTab = ref<TaskFilter>('all');
-const searchQuery = ref('')
-const debouncedSearchQuery = ref('')
-
-type TaskSort = 'name' | 'author' | 'priority' | 'date';
-const sortQuery = ref<TaskSort>('name')
-const sortOptions = [
+const activeTab = ref<TaskFilter>('all'); // Активный таб
+  const allTabs: TaskTab[] = [ // Опции табов
+    { key: 'all', label: 'Все задачи' },
+    { key: 'completed', label: 'Выполненные' },
+    { key: 'active', label: 'Активные' },
+  ];
+  
+type TaskSort = 'name' | 'author' | 'priority' | 'date'; // Доступные опции сортировки
+const sortQuery = ref<TaskSort>('name') // Дефолтный способ сортировки
+  const sortOptions = [ // Опции сортировки
   { label: 'По названию', value: 'name' },
   { label: 'По автору', value: 'author' },
   { label: 'По приоритету', value: 'priority' },
   { label: 'По сроку', value: 'date' },
 ]
-
-const applySearchDebounce = useDebounce((value: string) => {
+  
+const searchQuery = ref('') // Поисковой запрос
+const debouncedSearchQuery = ref('') // Поисковой запрос с обновлением через задержку
+const applySearchDebounce = useDebounce((value: string) => { // Хэндлер обновления debouncedSearchQuery
   debouncedSearchQuery.value = value
 }, 300)
-
-watch(
+watch( // При обновлении searchQuery включается хэндлер с задержкой
   searchQuery,
   (value) => {
     applySearchDebounce(value)
@@ -58,13 +68,8 @@ watch(
   { immediate: true },
 )
 
-const allTabs: TaskTab[] = [
-  { key: 'all', label: 'Все задачи' },
-  { key: 'completed', label: 'Выполненные' },
-  { key: 'active', label: 'Активные' },
-];
 
-const filteredTasks = computed(() => {
+const filteredTasks = computed(() => { // Фильтрация задач. Сначала по табам потом по поисковому запросу
   let statusFilteredTasks = tasks.value;
 
   if (activeTab.value === 'completed') {
@@ -93,19 +98,19 @@ const filteredTasks = computed(() => {
   });
 });
 
-const priorityWeight: Record<TaskPriority, number> = {
+const priorityWeight: Record<TaskPriority, number> = { // Вес приоритетов задач, для фильтрации
   high: 0,
   medium: 1,
   low: 2,
 }
 
-const toTaskTime = (value: string) => {
-  const isoPattern = /^\d{4}-\d{2}-\d{2}$/;
-  if (isoPattern.test(value)) {
+const toTaskTime = (value: string) => { // Нормализация даты
+  const isoPattern = /^\d{4}-\d{2}-\d{2}$/; // yyyy-mm-dd
+  if (isoPattern.test(value)) { 
     return new Date(`${value}T00:00:00`).getTime();
   }
 
-  const ruPattern = /^(\d{2})\.(\d{2})\.(\d{4})$/;
+  const ruPattern = /^(\d{2})\.(\d{2})\.(\d{4})$/; // dd.mm.yyyy
   const ruMatch = value.match(ruPattern);
   if (ruMatch) {
     const [, day, month, year] = ruMatch;
@@ -115,7 +120,7 @@ const toTaskTime = (value: string) => {
   return new Date(value).getTime();
 }
 
-const sortedTasks = computed(() => {
+const sortedTasks = computed(() => { // Сортировка
   const list = [...filteredTasks.value];
 
   if (sortQuery.value === 'name') {
@@ -154,7 +159,7 @@ const sortedTasks = computed(() => {
   return list;
 })
 
-const tabsWithCounts = computed(() => {
+const tabsWithCounts = computed(() => { // Визуализация количества задач в разных фильтрах
   const completedCount = tasks.value.filter((task) => task.isCompleted).length;
   const activeCount = tasks.value.length - completedCount;
 
@@ -172,7 +177,7 @@ const tabsWithCounts = computed(() => {
 });
 
 onMounted(async()=>{
-  await loadPageTasks()
+  await loadPageTasks() // Подгрузка задач при монтировании
 })
 </script>
 

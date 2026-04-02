@@ -1,6 +1,7 @@
+<!-- Страница входа -->
 <template>
   <section class="login">
-    <div class="login__tabs" role="tablist" aria-label="Переключение формы авторизации">
+    <div class="login__tabs" role="tablist" aria-label="Переключение формы авторизации"> <!-- Табы для переключения формы авторизации -->
       <button
         type="button"
         class="login__tab-btn"
@@ -26,7 +27,7 @@
     <h1 class="login__title">{{ pageTitle }}</h1>
     <p class="login__subtitle">{{ pageSubtitle }}</p>
 
-    <form class="login__form" novalidate @submit.prevent="submitAuth">
+    <form class="login__form" novalidate @submit.prevent="submitAuth"> <!-- Форма для входа -->
       <AppInput
         v-model="userEmail"
         label="Email"
@@ -79,31 +80,34 @@ const { login, register } = useAuth()
 
 type AuthTab = 'login' | 'register'
 
-const authTab = ref<AuthTab>('login')
+const authTab = ref<AuthTab>('login') // Активный таб
+
 const userEmail = ref('')
 const userPassword = ref('')
 const userPasswordConfirm = ref('')
 const isSubmitting = ref(false)
+// ^ Активные поля формы ^
 
 const emailError = ref('')
 const passwordError = ref('')
 const passwordConfirmError = ref('')
 const apiError = ref('')
+// ^ Ошибки формы ^
 
-const pageTitle = computed(() => authTab.value === 'login' ? 'Вход' : 'Регистрация')
+const pageTitle = computed(() => authTab.value === 'login' ? 'Вход' : 'Регистрация') // Вычисляемый заголовок страницы
 const pageSubtitle = computed(() => authTab.value === 'login'
     ? 'Управляйте задачами эффективно'
     : 'Создайте аккаунт и начните работать с задачами'
-)
-const submitButtonText = computed(() => authTab.value === 'login' ? 'Войти' : 'Зарегистрироваться')
+) // Вычисляемый подзаголовок
+const submitButtonText = computed(() => authTab.value === 'login' ? 'Войти' : 'Зарегистрироваться') // Вычисляемый текст кнопки
 
-const clearFormErrors = () => {
+const clearFormErrors = () => { // Очистка ошибок формы
     emailError.value = ''
     passwordError.value = ''
     passwordConfirmError.value = ''
 }
 
-const switchTab = (tab: AuthTab) => {
+const switchTab = (tab: AuthTab) => { // Переключение таба
     if (authTab.value === tab) {
         return
     }
@@ -117,38 +121,38 @@ const switchTab = (tab: AuthTab) => {
     }
 }
 
-const validateAuthForm = () => {
+const validateAuthForm = () => { // Валидация формы
     clearFormErrors()
 
-    const email = userEmail.value.trim()
+    const email = userEmail.value.trim() //Нормализация имейл
     const password = userPassword.value
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/ // Паттерн валидации 
 
-    if (!email) {
+    if (!email) { // Проверка наличия
         emailError.value = 'Введите email'
-    } else if (!emailPattern.test(email)) {
+    } else if (!emailPattern.test(email)) { // Проверка паттерна
         emailError.value = 'Введите корректный email'
     }
 
-    if (!password) {
+    if (!password) { // Проверка наличия
         passwordError.value = 'Введите пароль'
-    } else if (password.length < 6) {
+    } else if (password.length < 6) { // Проверка длины
         passwordError.value = 'Пароль должен быть минимум 6 символов'
     }
 
     if (authTab.value === 'register') {
-        if (!userPasswordConfirm.value) {
+        if (!userPasswordConfirm.value) { // Проверка наличия
             passwordConfirmError.value = 'Повторите пароль'
-        } else if (userPasswordConfirm.value !== password) {
+        } else if (userPasswordConfirm.value !== password) { // Проверка соответствия 
             passwordConfirmError.value = 'Пароли не совпадают'
         }
     }
 
-    return !emailError.value && !passwordError.value && !passwordConfirmError.value
+    return !emailError.value && !passwordError.value && !passwordConfirmError.value // Возврат ошибок
 }
 
-const getApiErrorMessage = (error: unknown) => {
-    const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message
+const getApiErrorMessage = (error: unknown) => { // Хэндлер ошибок входа
+    const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message 
     if (typeof message === 'string' && message.trim()) {
         return message
     }
@@ -158,25 +162,25 @@ const getApiErrorMessage = (error: unknown) => {
         : 'Не удалось зарегистрироваться'
 }
 
-const submitAuth = async () => {
+const submitAuth = async () => { // Хэндлер авторизации / регистрации 
     apiError.value = ''
 
-    if (!validateAuthForm()) {
+    if (!validateAuthForm()) { // Если поля не проходят валидацию - завершить
         return
     }
 
     isSubmitting.value = true
 
     try {
-        if (authTab.value === 'login') {
+        if (authTab.value === 'login') { // Авторизация по имейлу и паролю
             await login(userEmail.value, userPassword.value)
             return
         }
 
-        await register(userEmail.value, userPassword.value)
-        await login(userEmail.value, userPassword.value)
+        await register(userEmail.value, userPassword.value) // Регистрация и
+        await login(userEmail.value, userPassword.value) // Последующий сразу вход по этим данным
     } catch (error) {
-        apiError.value = getApiErrorMessage(error)
+        apiError.value = getApiErrorMessage(error) // Хэндлер ошибок входа
     } finally {
         isSubmitting.value = false
     }
