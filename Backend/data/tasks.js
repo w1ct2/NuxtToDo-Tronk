@@ -70,6 +70,7 @@ const tasks = [
         isCompleted: false,
         createdBy: 'Дмитрий',
         priority: 'medium',
-    },
+    }, 
+    // Мок данные для визуализации и тестирования
 ]
 export default tasks

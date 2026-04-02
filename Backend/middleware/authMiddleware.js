@@ -1,11 +1,11 @@
 import jwt from "jsonwebtoken";
 
-const SECRET = process.env.JWT_SECRET || "jwtsecret";
+const SECRET = process.env.JWT_SECRET || "jwtsecret"; // Получение секрета из env
 
-export const authMiddleware = (req, res, next) => {
+export const authMiddleware = (req, res, next) => { // Middleware для проверки авторизации
   const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) { // Проверка наличия токена
     return res.status(401).json({ message: "Unauthorized" });
   }
 

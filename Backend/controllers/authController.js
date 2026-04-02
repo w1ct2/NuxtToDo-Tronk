@@ -2,24 +2,24 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import users from "../data/users.js";
 
-const SECRET = process.env.JWT_SECRET || "jwtsecret";
+const SECRET = process.env.JWT_SECRET || "jwtsecret"; // Получение секрета из env
 
 export const register = async (req, res) => {
-  const email = req.body?.email?.trim()?.toLowerCase();
-  const password = req.body?.password;
+  const email = req.body?.email?.trim()?.toLowerCase(); // Получение и нормализация email
+  const password = req.body?.password; // Получение пароля
 
   if (!email || !password) {
-    return res.status(400).json({ message: "Email and password are required" });
+    return res.status(400).json({ message: "Email and password are required" }); // Проверка наличия email и пароля
   }
 
-  const existingUser = users.find((u) => u.email === email);
+  const existingUser = users.find((u) => u.email === email); // Есть ли пользователь с email
   if (existingUser) {
     return res.status(400).json({ message: "User already exists" });
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash(password, 10); // Хэш пароля из запроса
 
-  const user = {
+  const user = { // Формирование обьекта пользователя
     id: Date.now(),
     email,
     password: hashedPassword,
@@ -31,34 +31,34 @@ export const register = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-  const email = req.body?.email?.trim()?.toLowerCase();
-  const password = req.body?.password;
+  const email = req.body?.email?.trim()?.toLowerCase(); // Получение и нормализация email
+  const password = req.body?.password; // Получение пароля
 
   if (!email || !password) {
-    return res.status(400).json({ message: "Email and password are required" });
+    return res.status(400).json({ message: "Email and password are required" }); // Проверка наличия email и пароля
   }
 
-  const user = users.find((u) => u.email === email);
+  const user = users.find((u) => u.email === email); // Есть ли пользователь с email
   if (!user) {
     return res.status(400).json({ message: "User not found" });
   }
 
   let isMatch = false;
-  const isHashedPassword = typeof user.password === "string" && user.password.startsWith("$2");
+  const isHashedPassword = typeof user.password === "string" && user.password.startsWith("$2"); // Хэширован ли пароль
 
   if (isHashedPassword) {
-    isMatch = await bcrypt.compare(password, user.password);
+    isMatch = await bcrypt.compare(password, user.password); // Сравнение пароля с хэшем
   } else {
-    isMatch = password === user.password;
+    isMatch = password === user.password; // Сравнение пароля с паролем из базы
     if (isMatch) {
-      user.password = await bcrypt.hash(password, 10);
+      user.password = await bcrypt.hash(password, 10); // Хэширование пароля
     }
   }
   if (!isMatch) {
     return res.status(400).json({ message: "Wrong password" });
   }
 
-  const token = jwt.sign({ id: user.id, email: user.email }, SECRET, {
+  const token = jwt.sign({ id: user.id, email: user.email }, SECRET, { // Генерация jwt токена
     expiresIn: "1h",
   });
 
@@ -72,13 +72,13 @@ export const login = async (req, res) => {
 };
 
 export const me = (req, res) => {
-  const user = users.find((u) => u.id === req.user?.id);
+  const user = users.find((u) => u.id === req.user?.id); // Есть ли пользователь с id
 
   if (!user) {
     return res.status(404).json({ message: "User not found" });
   }
 
-  return res.json({
+  return res.json({ // Возврат данных пользователя
     user: {
       id: user.id,
       email: user.email,
