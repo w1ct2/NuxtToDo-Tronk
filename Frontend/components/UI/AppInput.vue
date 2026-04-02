@@ -78,7 +78,7 @@ type InputMode =
 
 const props = defineProps({
   modelValue: { type: [String, Number], default: null },
-  as: { type: String, default: 'input' }, // 'input' | 'textarea'
+  as: { type: String, default: 'input' }, // input | textarea
   type: { type: String as () => InputType, default: 'text' as InputType }, 
   label: { type: String, default: undefined },
   placeholder: { type: String, default: '' },

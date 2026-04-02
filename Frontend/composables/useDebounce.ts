@@ -1,5 +1,5 @@
 type Callback = (...args: any[]) => void
-
+// Debounce утилита
 export default function useDebounce<T extends Callback>(callback: T, timer = 300) {
   let timeoutId: ReturnType<typeof setTimeout> | null = null
 

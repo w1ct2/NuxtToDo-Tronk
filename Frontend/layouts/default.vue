@@ -1,3 +1,4 @@
+<!-- Дефолтный лаяут -->
 <template>
   <div id="root">
     <AppHeader />

@@ -1,3 +1,4 @@
+<!-- Лаяут для странички входа, без хэдера -->
 <template>
   <div id="root">
     <main class="layout-content">

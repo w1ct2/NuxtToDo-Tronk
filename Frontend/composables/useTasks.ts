@@ -6,7 +6,7 @@ export const useTasks = () => {
     const isLoading = useState<boolean>('tasks:loading', () => false)
     const error = useState<string | null>('tasks:error', () => null)
 
-    const loadTasks = async (status: TaskFilter = "all", search = "") => {
+    const loadTasks = async (status: TaskFilter = "all", search = "") => { // Функция подгрузки задач с сервера, сделана для поддержания реактивности при изменениях
         isLoading.value = true
         error.value = null
 
@@ -25,22 +25,22 @@ export const useTasks = () => {
         }
     }
 
-    const createTask = async (task: TodoTask) => {
+    const createTask = async (task: TodoTask) => { // Создание задачи
         const res = await $api.post('/tasks', task)
-        await loadTasks()
+        await loadTasks() // Подгрузка обновленных данных после успешной операции
         return res.data
     }
 
-    const deleteTask = async (taskOrId: TodoTask | number) => {
+    const deleteTask = async (taskOrId: TodoTask | number) => { // Удаление задачи
         const taskId = typeof taskOrId === 'number' ? taskOrId : taskOrId.id // проверка передается напрямую айди или через обьект
-        const res = await $api.delete(`/tasks/${taskId}`)
-        await loadTasks()
+        const res = await $api.delete(`/tasks/${taskId}`) // Запрос по айди через параметры
+        await loadTasks() // Подгрузка обновленных данных после успешной операции
         return res.data
     }
 
-    const updateTask = async (task: TodoTask) => {
+    const updateTask = async (task: TodoTask) => { // Обновление задачи
         const res = await $api.put(`/tasks/${task.id}`, task)
-        await loadTasks()
+        await loadTasks() // Подгрузка обновленных данных после успешной операции
         return res.data
     }
 
