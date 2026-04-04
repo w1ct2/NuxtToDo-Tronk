@@ -9,15 +9,23 @@ export const useTasks = () => {
         total: 0,
         totalPages: 1,
     }))
+    const lastRequest = useState('tasks:last-request', () => ({ // Обьект для занесения в память данных последнего запроса. без этого случаютсч баги с подгрузкой задач, слетает пагинация/отпадает реактивность
+        status: 'all' as TaskFilter,
+        search: '',
+        sort: 'name' as TaskSort,
+        isPagin: false,
+        page: 1,
+        limit: undefined as number | undefined,
+    }))
     const isLoading = useState<boolean>('tasks:loading', () => false)
     const error = useState<string | null>('tasks:error', () => null)
 
     const loadTasks = async (
-        status: TaskFilter = "all",
-        search = "",
-        sort: TaskSort = "name",
-        isPagin = false,
-        page?: number,
+        status: TaskFilter = lastRequest.value.status,
+        search = lastRequest.value.search,
+        sort: TaskSort = lastRequest.value.sort,
+        isPagin = lastRequest.value.isPagin,
+        page = lastRequest.value.page,
         limit?: number
     ) => { // Функция подгрузки задач с сервера, сделана для поддержания реактивности при изменениях
         isLoading.value = true
@@ -34,11 +42,20 @@ export const useTasks = () => {
             }
 
             const res = await $api.get<GetTasksResponse>('/tasks', {
-                params: { status, search, sort, isPagin, page, limit },
+                params: { status, search, sort, isPagin, page, limit: limit ?? lastRequest.value.limit },
             })
 
             tasks.value = res.data.result
             meta.value = res.data
+
+            lastRequest.value = {
+                status,
+                search,
+                sort,
+                isPagin,
+                page,
+                limit: limit ?? lastRequest.value.limit,
+            }
 
             return res.data.result
         } catch (e) {

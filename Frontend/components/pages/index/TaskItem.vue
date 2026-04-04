@@ -110,7 +110,7 @@ const emit = defineEmits<{
   (e: 'deleted', id: number): void;
 }>();
 
-const {updateTask, deleteTask} = useTasks()
+const {updateTask, deleteTask, loadTasks} = useTasks()
 
 const isExpanded = ref(false);
 

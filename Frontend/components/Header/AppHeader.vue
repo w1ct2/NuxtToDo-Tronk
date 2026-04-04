@@ -144,7 +144,7 @@ const toIsoDate = (value: string) => {
     return ''
   }
 
-  return `${year}-${month}-${day}`
+  return `${day}.${month}.${year}`
 }
 
 const onCreateNewTask = async () => {

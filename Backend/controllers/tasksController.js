@@ -34,20 +34,13 @@ export const getTasks = async (req, res) => { // ПОлучение задач
       if (!value) {
         return NaN;
       }
-
       const normalizedValue = String(value).trim();
-      const isoPattern = /^\d{4}-\d{2}-\d{2}$/; // yyyy-mm-dd
-      if (isoPattern.test(normalizedValue)) {
-        return new Date(`${normalizedValue}T00:00:00`).getTime();
-      }
-
-      const ruPattern = /^(\d{2})\.(\d{2})\.(\d{4})$/; // dd.mm.yyyy
-      const ruMatch = normalizedValue.match(ruPattern);
-      if (ruMatch) {
-        const [, day, month, year] = ruMatch;
+      const pattern = /^(\d{2})\.(\d{2})\.(\d{4})$/; // dd.mm.yyyy
+      const match = normalizedValue.match(pattern);
+      if (match) {
+        const [, day, month, year] = match;
         return new Date(`${year}-${month}-${day}T00:00:00`).getTime();
       }
-
       return new Date(normalizedValue).getTime();
     }
 
