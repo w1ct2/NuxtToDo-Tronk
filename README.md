@@ -32,6 +32,9 @@
 Редактирование задачи
 ![Редактирование задачи](Frontend/assets/readme/update-task.png)
 
+Реализация пагинации
+![Пагинация](Frontend/assets/readme/pagination.png)
+
 ## Что умеет проект
 
 - Регистрация и вход пользователя
@@ -103,7 +106,7 @@ cd ../Frontend
 npm install
 ```
 
-## Подробный запуск проекта (режим разработки)
+## Подробный запуск проекта
 
 Нужны 2 терминала: один для backend, второй для frontend.
 
@@ -149,24 +152,6 @@ Frontend будет доступен на:
 - после логина будет редирект на `/`
 - вход без регистрации осуществляется через: login: admin@admin.admin password: 12121212
 
-## Production-команды
-
-### Frontend
-
-```bash
-cd Frontend
-npm run build
-npm run preview
-```
-
-### Backend
-
-В `Backend/package.json` есть только `dev`-скрипт, поэтому прод-запуск:
-
-```bash
-cd Backend
-node server.js
-```
 
 ## API документация (все эндпоинты)
 
