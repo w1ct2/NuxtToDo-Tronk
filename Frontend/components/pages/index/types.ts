@@ -2,6 +2,8 @@ export type TaskFilter = 'all' | 'completed' | 'active';
 
 export type TaskPriority = 'low' | 'medium' | 'high';
 
+export type TaskSort = 'name' | 'author' | 'priority' | 'date'; // Доступные опции сортировки
+
 export interface TodoTask {
   id: number;
   title: string;

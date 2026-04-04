@@ -11,7 +11,6 @@
       @click="emit('change', tab.key)"
     >
       <span>{{ tab.label }}</span>
-      <span class="task-tabs__count">{{ tab.count ?? 0 }}</span>
     </button>
   </div>
 </template>

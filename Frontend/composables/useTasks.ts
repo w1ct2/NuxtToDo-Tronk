@@ -1,22 +1,46 @@
-import type { TaskFilter, TodoTask } from "~/components/pages/index/types"
+import type { TaskFilter, TaskSort, TodoTask } from "~/components/pages/index/types"
 
 export const useTasks = () => {
     const { $api } = useNuxtApp()
     const tasks = useState<TodoTask[]>('tasks:list', () => [])
+    const meta = useState<any>('tasks:meta', () => ({
+        page: 1,
+        limit: 3,
+        total: 0,
+        totalPages: 1,
+    }))
     const isLoading = useState<boolean>('tasks:loading', () => false)
     const error = useState<string | null>('tasks:error', () => null)
 
-    const loadTasks = async (status: TaskFilter = "all", search = "") => { // Функция подгрузки задач с сервера, сделана для поддержания реактивности при изменениях
+    const loadTasks = async (
+        status: TaskFilter = "all",
+        search = "",
+        sort: TaskSort = "name",
+        isPagin = false,
+        page?: number,
+        limit?: number
+    ) => { // Функция подгрузки задач с сервера, сделана для поддержания реактивности при изменениях
         isLoading.value = true
         error.value = null
 
         try {
-            const res = await $api.get<TodoTask[]>('/tasks', {
-                params: { status, search },
+            // структура ответа от бэкенда
+            type GetTasksResponse = {
+                result: TodoTask[],
+                page: number,
+                limit: number,
+                total: number,
+                totalPages: number
+            }
+
+            const res = await $api.get<GetTasksResponse>('/tasks', {
+                params: { status, search, sort, isPagin, page, limit },
             })
 
-            tasks.value = res.data
-            return res.data
+            tasks.value = res.data.result
+            meta.value = res.data
+
+            return res.data.result
         } catch (e) {
             error.value = 'Не удалось загрузить задачи'
             throw e
@@ -46,6 +70,7 @@ export const useTasks = () => {
 
     return {
         tasks,
+        meta,
         isLoading,
         error,
         loadTasks,

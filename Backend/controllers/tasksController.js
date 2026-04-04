@@ -3,7 +3,7 @@ import tasks from "../data/tasks.js";
 const ALLOWED_PRIORITIES = ["low", "medium", "high"]; // Допустимые приоритеты задач
 
 export const getTasks = async (req, res) => { // ПОлучение задач
-  const { status, search } = req.params // Получение статуса задачи и поискового запроса из параметров
+  const { status, search, sort, isPagin } = req.query // Получение статуса, поиска и настройки пагинации из query
   let result = [...tasks]; // Копирование задач в рабочую переменную
 
   if (status === "completed") {
@@ -24,7 +24,83 @@ export const getTasks = async (req, res) => { // ПОлучение задач
     );
   } // ^ Фильтрация задач при наличии поискового запроса ^
 
-  return res.status(200).json(result);
+  if (sort) {
+    const priorityWeight = { // Вес приоритетов задач, для сортировки
+      high: 0,
+      medium: 1,
+      low: 2,
+    }
+    const toTaskTime = (value) => { // Нормализация даты
+      if (!value) {
+        return NaN;
+      }
+
+      const normalizedValue = String(value).trim();
+      const isoPattern = /^\d{4}-\d{2}-\d{2}$/; // yyyy-mm-dd
+      if (isoPattern.test(normalizedValue)) {
+        return new Date(`${normalizedValue}T00:00:00`).getTime();
+      }
+
+      const ruPattern = /^(\d{2})\.(\d{2})\.(\d{4})$/; // dd.mm.yyyy
+      const ruMatch = normalizedValue.match(ruPattern);
+      if (ruMatch) {
+        const [, day, month, year] = ruMatch;
+        return new Date(`${year}-${month}-${day}T00:00:00`).getTime();
+      }
+
+      return new Date(normalizedValue).getTime();
+    }
+
+    if (sort === 'name') {
+      result = result.sort((a, b) => a.title.localeCompare(b.title, 'ru', { sensitivity: 'base' }));
+    } else if (sort === 'author') {
+      result = result.sort((a, b) => a.createdBy.localeCompare(b.createdBy, 'ru', { sensitivity: 'base' }));
+    } else if (sort === 'priority') {
+      result = result.sort((a, b) => priorityWeight[a.priority] - priorityWeight[b.priority]);
+    } else if (sort === 'date') {
+      result = result.sort((a, b) => {
+        const leftTime = toTaskTime(a.dueDate);
+        const rightTime = toTaskTime(b.dueDate);
+
+        if (Number.isNaN(leftTime) && Number.isNaN(rightTime)) {
+          return 0;
+        }
+
+        if (Number.isNaN(leftTime)) {
+          return 1;
+        }
+
+        if (Number.isNaN(rightTime)) {
+          return -1;
+        }
+
+        return leftTime - rightTime;
+      });
+    }
+  } // ^ Сортировка задач при наличии сорт. запроса ^
+
+  const shouldPaginate = isPagin === "true" || isPagin === true // нужна ли пагинация
+  const requestedPage = Number(req.query.page) || 1 // номер страницы с запроса (чанка)
+  const totalItems = result.length // всего элементов в итге
+  const limit = shouldPaginate ? Number(req.query.limit) || 8 : totalItems || 1 // лимит
+  const page = shouldPaginate ? requestedPage : 1 // страница
+  let pagedResult = result;
+
+  if (shouldPaginate) {
+    const startIndex = (page - 1) * limit
+    const endIndex = startIndex + limit 
+    pagedResult = result.slice(startIndex, endIndex) 
+  }
+
+  return res.status(200).json({
+    result: pagedResult, // Результат
+    page: page,
+    limit: limit,
+    total: totalItems,
+    totalPages: shouldPaginate ? Math.max(Math.ceil(totalItems / limit), 1) : 1,
+    allTasks: tasks,
+    // ^ Мета-данные ответа ^
+  });
 };
 
 export const createTask = async (req, res) => { // Создание задачи
