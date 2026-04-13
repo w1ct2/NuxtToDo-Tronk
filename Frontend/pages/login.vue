@@ -88,67 +88,57 @@ const userPasswordConfirm = ref('')
 const isSubmitting = ref(false)
 // ^ Активные поля формы ^
 
-const emailError = ref('')
-const passwordError = ref('')
-const passwordConfirmError = ref('')
 const apiError = ref('')
-// ^ Ошибки формы ^
+// ^ Ошибка API ^
 
-const pageTitle = computed(() => authTab.value === 'login' ? 'Вход' : 'Регистрация') // Вычисляемый заголовок страницы
-const pageSubtitle = computed(() => authTab.value === 'login'
-    ? 'Управляйте задачами эффективно'
-    : 'Создайте аккаунт и начните работать с задачами'
-) // Вычисляемый подзаголовок
-const submitButtonText = computed(() => authTab.value === 'login' ? 'Войти' : 'Зарегистрироваться') // Вычисляемый текст кнопки
+const validation = useValidation( // валидация формы
+    () => ({
+        userEmail: userEmail.value,
+        userPassword: userPassword.value,
+        userPasswordConfirm: userPasswordConfirm.value,
+    }),
+    {
+        userEmail: [
+            validators.required('Введите email'),
+            validators.email('Введите корректный email'),
+        ],
+        userPassword: [
+            validators.required('Введите пароль'),
+            validators.minLength(6, 'Пароль должен быть минимум 6 символов'),
+        ],
+        userPasswordConfirm: [
+            {
+                name: 'passwordConfirm',
+                test: (value, ctx) => { // проверка совпадения паролей
+                    if (authTab.value === 'login') return null // если таб входа то не проверяем
+                    if (!value) return 'Повторите пароль'
+                    return value === ctx.form.userPassword ? null : 'Пароли не совпадают'
+                },
+            },
+        ],
+    },
+)
 
-const clearFormErrors = () => { // Очистка ошибок формы
-    emailError.value = ''
-    passwordError.value = ''
-    passwordConfirmError.value = ''
-}
+const emailError = computed(() => validation.errors.value.userEmail ?? '')
+const passwordError = computed(() => validation.errors.value.userPassword ?? '')
+const passwordConfirmError = computed(() => validation.errors.value.userPasswordConfirm ?? '')
+// ^ Ошибки валидации ^
+
+const pageTitle = computed(() => authTab.value === 'login' ? 'Вход' : 'Регистрация') 
+const pageSubtitle = computed(() => authTab.value === 'login' ? 'Для быстрого входа: admin@admin.admin, 12121212' : 'Создайте аккаунт и начните работать с задачами') 
+const submitButtonText = computed(() => authTab.value === 'login' ? 'Войти' : 'Зарегистрироваться') 
+// ^ Тексты страницы ^
 
 const switchTab = (tab: AuthTab) => { // Переключение таба
     if (authTab.value === tab) {
         return
     }
-
     authTab.value = tab
     apiError.value = ''
-    clearFormErrors()
-
+    validation.reset()
     if (tab === 'login') {
         userPasswordConfirm.value = ''
     }
-}
-
-const validateAuthForm = () => { // Валидация формы
-    clearFormErrors()
-
-    const email = userEmail.value.trim() //Нормализация имейл
-    const password = userPassword.value
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/ // Паттерн валидации 
-
-    if (!email) { // Проверка наличия
-        emailError.value = 'Введите email'
-    } else if (!emailPattern.test(email)) { // Проверка паттерна
-        emailError.value = 'Введите корректный email'
-    }
-
-    if (!password) { // Проверка наличия
-        passwordError.value = 'Введите пароль'
-    } else if (password.length < 6) { // Проверка длины
-        passwordError.value = 'Пароль должен быть минимум 6 символов'
-    }
-
-    if (authTab.value === 'register') {
-        if (!userPasswordConfirm.value) { // Проверка наличия
-            passwordConfirmError.value = 'Повторите пароль'
-        } else if (userPasswordConfirm.value !== password) { // Проверка соответствия 
-            passwordConfirmError.value = 'Пароли не совпадают'
-        }
-    }
-
-    return !emailError.value && !passwordError.value && !passwordConfirmError.value // Возврат ошибок
 }
 
 const getApiErrorMessage = (error: unknown) => { // Хэндлер ошибок входа
@@ -165,7 +155,7 @@ const getApiErrorMessage = (error: unknown) => { // Хэндлер ошибок 
 const submitAuth = async () => { // Хэндлер авторизации / регистрации 
     apiError.value = ''
 
-    if (!validateAuthForm()) { // Если поля не проходят валидацию - завершить
+    if (!(await validation.validateAll())) { // Если поля не проходят валидацию - завершить
         return
     }
 

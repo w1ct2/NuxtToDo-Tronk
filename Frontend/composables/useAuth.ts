@@ -1,6 +1,21 @@
 export const useAuth = () => {
-    const { $api } = useNuxtApp()
     const normalizeEmail = (email: string) => email.trim().toLowerCase() // Нормализация имейла
+
+    // запрос авторизации
+    const loginRequest = useApiRequest<{ token: string }>({
+        url: "/auth/login",
+        method: "POST",
+    })
+    // запрос регистрации
+    const registerRequest = useApiRequest({
+        url: "/auth/register",
+        method: "POST",
+    })
+    // запрос проверки авторизации
+    const checkAuthRequest = useApiRequest({
+        url: "/auth/me",
+        method: "GET",
+    })
 
     const setToken = (token: string) => { // Добавление токена в локалстор
         if (import.meta.client) {
@@ -15,18 +30,22 @@ export const useAuth = () => {
     }
 
     const login = async (email: string, password: string) => { // Запрос авторизации
-        const res = await $api.post('/auth/login', {
-            email: normalizeEmail(email),
-            password,
+        const response = await loginRequest.execute({
+            body: {
+                email: normalizeEmail(email),
+                password,
+            },
         })
-        setToken(res.data.token) // Установка токена в локалхост
+        setToken(response.token) // Установка токена в локалхост
         await navigateTo('/')
     }
 
     const register = async (email: string, password: string) => { // Запрос регистрации
-        await $api.post('/auth/register', {
-            email: normalizeEmail(email),
-            password,
+        await registerRequest.execute({
+            body: {
+                email: normalizeEmail(email),
+                password,
+            },
         })
         // setToken(res.data.token)
         // await navigateTo('/')
@@ -44,7 +63,7 @@ export const useAuth = () => {
         if (!token) return false
 
         try {
-            await $api.get('/auth/me')
+            await checkAuthRequest.execute()
             return true
         } catch {
             clearToken()

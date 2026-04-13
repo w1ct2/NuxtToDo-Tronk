@@ -1,15 +1,27 @@
 import type { TaskFilter, TaskSort, TodoTask } from "~/components/pages/index/types"
 
+// тип ответа запроса задач
+type GetTasksResponse = {
+    result: TodoTask[]
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+}
+
 export const useTasks = () => {
-    const { $api } = useNuxtApp()
-    const tasks = useState<TodoTask[]>('tasks:list', () => [])
-    const meta = useState<any>('tasks:meta', () => ({
+    const tasks = useState<TodoTask[]>('tasks:list', () => []) // сами задачи
+    const meta = useState<GetTasksResponse>('tasks:meta', () => ({ //мета данные запроса
+        result: [],
         page: 1,
         limit: 3,
         total: 0,
         totalPages: 1,
     }))
-    const lastRequest = useState('tasks:last-request', () => ({ // Обьект для занесения в память данных последнего запроса. без этого случаютсч баги с подгрузкой задач, слетает пагинация/отпадает реактивность
+    /** Обьект для занесения в память данных последнего запроса. 
+     * без этого случаютсч баги с подгрузкой задач,
+     * слетает пагинация/отпадает реактивность*/ 
+    const lastRequest = useState('tasks:last-request', () => ({ 
         status: 'all' as TaskFilter,
         search: '',
         sort: 'name' as TaskSort,
@@ -17,8 +29,18 @@ export const useTasks = () => {
         page: 1,
         limit: undefined as number | undefined,
     }))
-    const isLoading = useState<boolean>('tasks:loading', () => false)
     const error = useState<string | null>('tasks:error', () => null)
+
+    // запрос задач
+    const tasksRequest = useApiRequest<GetTasksResponse>({
+        url: "/tasks",
+        method: "GET",
+    })
+    // запрос на мутацию
+    const mutationRequest = useApiRequest({
+        url: "/tasks",
+    })
+    const isLoading = tasksRequest.isLoading
 
     const loadTasks = async (
         status: TaskFilter = lastRequest.value.status,
@@ -28,25 +50,15 @@ export const useTasks = () => {
         page = lastRequest.value.page,
         limit?: number
     ) => { // Функция подгрузки задач с сервера, сделана для поддержания реактивности при изменениях
-        isLoading.value = true
         error.value = null
 
         try {
-            // структура ответа от бэкенда
-            type GetTasksResponse = {
-                result: TodoTask[],
-                page: number,
-                limit: number,
-                total: number,
-                totalPages: number
-            }
-
-            const res = await $api.get<GetTasksResponse>('/tasks', {
+            const response = await tasksRequest.execute({
                 params: { status, search, sort, isPagin, page, limit: limit ?? lastRequest.value.limit },
             })
 
-            tasks.value = res.data.result
-            meta.value = res.data
+            tasks.value = response.result
+            meta.value = response
 
             lastRequest.value = {
                 status,
@@ -57,32 +69,40 @@ export const useTasks = () => {
                 limit: limit ?? lastRequest.value.limit,
             }
 
-            return res.data.result
+            return response.result
         } catch (e) {
             error.value = 'Не удалось загрузить задачи'
             throw e
-        } finally {
-            isLoading.value = false
         }
     }
 
     const createTask = async (task: TodoTask) => { // Создание задачи
-        const res = await $api.post('/tasks', task)
+        const response = await mutationRequest.execute({
+            method: "POST",
+            body: task,
+        })
         await loadTasks() // Подгрузка обновленных данных после успешной операции
-        return res.data
+        return response
     }
 
     const deleteTask = async (taskOrId: TodoTask | number) => { // Удаление задачи
         const taskId = typeof taskOrId === 'number' ? taskOrId : taskOrId.id // проверка передается напрямую айди или через обьект
-        const res = await $api.delete(`/tasks/${taskId}`) // Запрос по айди через параметры
+        const response = await mutationRequest.execute({
+            method: "DELETE",
+            url: `/tasks/${taskId}`,
+        }) // Запрос по айди через параметры
         await loadTasks() // Подгрузка обновленных данных после успешной операции
-        return res.data
+        return response
     }
 
     const updateTask = async (task: TodoTask) => { // Обновление задачи
-        const res = await $api.put(`/tasks/${task.id}`, task)
+        const response = await mutationRequest.execute({
+            method: "PUT",
+            url: `/tasks/${task.id}`,
+            body: task,
+        })
         await loadTasks() // Подгрузка обновленных данных после успешной операции
-        return res.data
+        return response
     }
 
     return {
