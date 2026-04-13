@@ -1,3 +1,49 @@
+# Для Лабмедиа: 
+
+Я решил не создавать утилиты useApiRequest & useValidation в вакууме, и внедрил их в проект который недавно писал.
+Утилиты находятся по путям:
+
+```text
+NuxtToDo-Tronk/
+  Backend/
+    ...
+  Frontend/
+    components/
+    composables/
+      useValidation.ts               # Утилита валидации полей
+      useApiRequest.ts               # Утилита http запросов через axios
+    layouts/
+    middleware/
+    pages/
+    plugins/
+    nuxt.config.ts
+  README.md
+```
+
+Применение данных утилит уже внедрено в проект, по путям:
+
+```text
+NuxtToDo-Tronk/
+  Backend/
+    ...
+  Frontend/
+    components/
+    composables/
+      useValidation.ts 
+      useApiRequest.ts
+      useTasks.ts              # Внедрена утилита для http запросов на бэкенд
+      useAuth.ts              # Внедрена утилита для http запросов на бэкенд
+    layouts/
+    middleware/
+    pages/
+      login.vue              # Внедрена утилита для валидации полей
+    plugins/
+    nuxt.config.ts
+  README.md
+```
+
+Внутри файлов утилит есть подробные комментарии к коду для читаемости и понимания кода
+
 # NuxtToDo-Tronk
 
 Полноценное ToDo-приложение с авторизацией и CRUD-операциями по задачам.
