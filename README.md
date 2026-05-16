@@ -70,28 +70,6 @@ NuxtToDo-Tronk/
 - `Node.js`
 - `npm`
 
-## Переменные окружения
-
-### Backend (`Backend/.env`)
-
-```env
-PORT=5001
-CLIENT_ORIGIN=http://localhost:3000
-JWT_SECRET=myjwtkey
-```
-
-- `PORT` - порт backend-сервера
-- `CLIENT_ORIGIN` - origin frontend-приложения для CORS
-- `JWT_SECRET` - секрет подписи JWT
-
-### Frontend (`Frontend/.env`)
-
-```env
-NUXT_PUBLIC_API_BASE=http://localhost:5001/api
-```
-- При возникновении проблем  - на клиенте и сервере лежат .env.example
-- `NUXT_PUBLIC_API_BASE` - базовый URL API для axios-клиента на фронте
-
 ## Установка зависимостей
 
 Устанавливать зависимости нужно отдельно для frontend и backend:
