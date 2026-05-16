@@ -1,4 +1,4 @@
-import tasks from "../data/tasks.js";
+import tasks from "../data/tasks.data.js";
 
 const ALLOWED_PRIORITIES = ["low", "medium", "high"]; // Допустимые приоритеты задач
 

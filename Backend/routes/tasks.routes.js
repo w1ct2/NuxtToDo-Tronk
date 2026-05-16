@@ -1,7 +1,7 @@
 import express from 'express'
 import { authMiddleware} from '../middleware/authMiddleware.js'
-import { me } from '../controllers/authController.js'
-import { getTasks, createTask, updateTask, deleteTask } from '../controllers/tasksController.js'
+import { me } from '../controllers/auth.controller.js'
+import { getTasks, createTask, updateTask, deleteTask } from '../controllers/tasks.controller.js'
 const router = express.Router() 
 
 router.get('/tasks', getTasks)

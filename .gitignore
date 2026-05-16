@@ -24,3 +24,6 @@ logs
 Backend/.env
 Frontend/.env
 !.env.example
+
+# VSCode
+.vscode

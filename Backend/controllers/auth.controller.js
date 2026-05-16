@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import users from "../data/users.js";
+import users from "../data/users.data.js";
 
 const SECRET = process.env.JWT_SECRET || "jwtsecret"; // Получение секрета из env
 
