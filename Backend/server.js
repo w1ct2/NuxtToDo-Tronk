@@ -24,5 +24,5 @@ app.get("/", (req, res) => { // Проверка работоспособнос�
 app.use("/api/auth", authRoutes); // Маршруты авторизации
 app.use("/api", taskRoutes) // Маршруты задач
 
-const PORT = process.env.PORT || 5000; // Порт для запуска
+const PORT = process.env.PORT || 5001; // Порт для запуска (на macOS 5000 занят)
 app.listen(PORT, () => console.log(`Server running on ${PORT}`)); // Запуск сервера
