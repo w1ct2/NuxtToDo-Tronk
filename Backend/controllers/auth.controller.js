@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import users from "../data/users.data.js";
 import User from "../models/User.model.js";
+import { v4 as uuidv4 } from 'uuid';
 
 const SECRET = process.env.JWT_SECRET || "jwtsecret"; // Получение секрета из env
 
@@ -13,7 +13,7 @@ export const register = async (req, res) => {
     return res.status(400).json({ message: "Email and password are required" }); // Проверка наличия email и пароля
   }
 
-  const existingUser = users.find((u) => u.email === email); // Есть ли пользователь с email
+  const existingUser = await User.findOne({ email }); // Есть ли пользователь с email
   if (existingUser) {
     return res.status(400).json({ message: "User already exists" });
   }
@@ -21,12 +21,11 @@ export const register = async (req, res) => {
   const hashedPassword = await bcrypt.hash(password, 10); // Хэш пароля из запроса
 
   const user = { // Формирование обьекта пользователя
-    id: Date.now(),
+    userId: uuidv4(),
     email,
     password: hashedPassword,
   };
 
-  users.push(user);
   await User.create(user);
 
   return res.status(201).json({ message: "User created" });
@@ -40,7 +39,8 @@ export const login = async (req, res) => {
     return res.status(400).json({ message: "Email and password are required" }); // Проверка наличия email и пароля
   }
 
-  const user = users.find((u) => u.email === email); // Есть ли пользователь с email
+  const user = await User.findOne({ email }) // Есть ли пользователь с email
+  console.log("user in login", user);
   if (!user) {
     return res.status(400).json({ message: "User not found" });
   }
@@ -60,21 +60,19 @@ export const login = async (req, res) => {
     return res.status(400).json({ message: "Wrong password" });
   }
 
-  const token = jwt.sign({ id: user.id, email: user.email }, SECRET, { // Генерация jwt токена
-    expiresIn: "1h",
-  });
+  const token = jwt.sign({ userId: user.userId, email: user.email }, SECRET, {expiresIn: "1h"}); // Генерация jwt токена
 
   return res.json({
     token,
     user: {
-      id: user.id,
+      userId: user.userId,
       email: user.email,
     },
   });
 };
 
-export const me = (req, res) => {
-  const user = users.find((u) => u.id === req.user?.id); // Есть ли пользователь с id
+export const me = async (req, res) => {
+  const user = await User.findOne({ userId: req.user?.userId }); // Есть ли пользователь с id
 
   if (!user) {
     return res.status(404).json({ message: "User not found" });
@@ -82,7 +80,7 @@ export const me = (req, res) => {
 
   return res.json({ // Возврат данных пользователя
     user: {
-      id: user.id,
+      userId: user.userId,
       email: user.email,
     },
   });

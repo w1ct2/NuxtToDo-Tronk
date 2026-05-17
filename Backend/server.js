@@ -1,11 +1,9 @@
+import "dotenv/config";
 import cors from "cors";
-import dotenv from "dotenv";
 import mongoose from "mongoose";
 import express from "express";
 import authRoutes from "./routes/auth.routes.js";
 import taskRoutes from "./routes/tasks.routes.js"
-
-dotenv.config();
 
 const app = express(); // создает экземпляр Express приложения
 app.use( // Подключение CORS

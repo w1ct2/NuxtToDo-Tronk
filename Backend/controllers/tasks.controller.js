@@ -1,57 +1,63 @@
-import tasks from "../data/tasks.data.js";
 import Task from "../models/tasks.model.js";
 
 const ALLOWED_PRIORITIES = ["low", "medium", "high"]; // Допустимые приоритеты задач
 
 export const getTasks = async (req, res) => { // ПОлучение задач
   const { status, search, sort, isPagin } = req.query // Получение статуса, поиска и настройки пагинации из query
-  let result = [...tasks]; // Копирование задач в рабочую переменную
+  const userId = req.user.userId;
+
+  const filter = { userId };
 
   if (status === "completed") {
-    result = result.filter((task) => task.isCompleted);
+    filter.isCompleted = true;
   } else if (status === "active") {
-    result = result.filter((task) => !task.isCompleted);
-  } else if (status === "all") {
-    result = result
+    filter.isCompleted = false;
   } // ^ Фильтрация задач при наличии статуса в запросе ^
 
   if (search) {
-    const term = String(search).toLowerCase().trim();
-    result = result.filter(
-      (task) =>
-        task.title.toLowerCase().includes(term) ||
-        task.description.toLowerCase().includes(term) ||
-        task.createdBy.toLowerCase().includes(term),
-    );
+    const term = String(search).trim();
+    filter.$or = [
+      { title: { $regex: term, $options: "i" } },
+      { description: { $regex: term, $options: "i" } },
+      { createdBy: { $regex: term, $options: "i" } },
+    ];
   } // ^ Фильтрация задач при наличии поискового запроса ^
 
+  let result = await Task.find(filter).lean();
+
   if (sort) {
-    const priorityWeight = { // Вес приоритетов задач, для сортировки
+    const priorityWeight = {
       high: 0,
       medium: 1,
       low: 2,
-    }
-    const toTaskTime = (value) => { // Нормализация даты
+    };
+    const toTaskTime = (value) => {
       if (!value) {
         return NaN;
       }
       const normalizedValue = String(value).trim();
-      const pattern = /^(\d{2})\.(\d{2})\.(\d{4})$/; // dd.mm.yyyy
+      const pattern = /^(\d{2})\.(\d{2})\.(\d{4})$/;
       const match = normalizedValue.match(pattern);
       if (match) {
         const [, day, month, year] = match;
         return new Date(`${year}-${month}-${day}T00:00:00`).getTime();
       }
       return new Date(normalizedValue).getTime();
-    }
+    };
 
-    if (sort === 'name') {
-      result = result.sort((a, b) => a.title.localeCompare(b.title, 'ru', { sensitivity: 'base' }));
-    } else if (sort === 'author') {
-      result = result.sort((a, b) => a.createdBy.localeCompare(b.createdBy, 'ru', { sensitivity: 'base' }));
-    } else if (sort === 'priority') {
-      result = result.sort((a, b) => priorityWeight[a.priority] - priorityWeight[b.priority]);
-    } else if (sort === 'date') {
+    if (sort === "name") {
+      result = result.sort((a, b) =>
+        a.title.localeCompare(b.title, "ru", { sensitivity: "base" }),
+      );
+    } else if (sort === "author") {
+      result = result.sort((a, b) =>
+        a.createdBy.localeCompare(b.createdBy, "ru", { sensitivity: "base" }),
+      );
+    } else if (sort === "priority") {
+      result = result.sort(
+        (a, b) => priorityWeight[a.priority] - priorityWeight[b.priority],
+      );
+    } else if (sort === "date") {
       result = result.sort((a, b) => {
         const leftTime = toTaskTime(a.dueDate);
         const rightTime = toTaskTime(b.dueDate);
@@ -59,31 +65,28 @@ export const getTasks = async (req, res) => { // ПОлучение задач
         if (Number.isNaN(leftTime) && Number.isNaN(rightTime)) {
           return 0;
         }
-
         if (Number.isNaN(leftTime)) {
           return 1;
         }
-
         if (Number.isNaN(rightTime)) {
           return -1;
         }
-
         return leftTime - rightTime;
       });
     }
   } // ^ Сортировка задач при наличии сорт. запроса ^
 
-  const shouldPaginate = isPagin === "true" || isPagin === true // нужна ли пагинация
-  const requestedPage = Number(req.query.page) || 1 // номер страницы с запроса (чанка)
-  const totalItems = result.length // всего элементов в итге
-  const limit = shouldPaginate ? Number(req.query.limit) || 8 : totalItems || 1 // лимит
-  const page = shouldPaginate ? requestedPage : 1 // страница
+  const shouldPaginate = isPagin === "true" || isPagin === true; // нужна ли пагинация
+  const requestedPage = Number(req.query.page) || 1; // номер страницы с запроса (чанка)
+  const totalItems = result.length; // всего элементов в итоге
+  const limit = shouldPaginate ? Number(req.query.limit) || 8 : totalItems || 1; // лимит
+  const page = shouldPaginate ? requestedPage : 1; // страница
   let pagedResult = result;
 
   if (shouldPaginate) {
-    const startIndex = (page - 1) * limit
-    const endIndex = startIndex + limit 
-    pagedResult = result.slice(startIndex, endIndex) 
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    pagedResult = result.slice(startIndex, endIndex);
   }
 
   return res.status(200).json({
@@ -92,7 +95,6 @@ export const getTasks = async (req, res) => { // ПОлучение задач
     limit: limit,
     total: totalItems,
     totalPages: shouldPaginate ? Math.max(Math.ceil(totalItems / limit), 1) : 1,
-    allTasks: tasks,
     // ^ Мета-данные ответа ^
   });
 };
@@ -105,7 +107,7 @@ export const createTask = async (req, res) => { // Создание задачи
   } // ^ Проверка наличия заголовка задачи ^
 
   const newTask = { // Формирование  обьекта новой задачи
-    id: Date.now(),
+    userId: req.user.userId,
     title: String(payload.title).trim(),
     description: String(payload.description ?? "").trim(),
     dueDate: payload.dueDate || new Date().toISOString().slice(0, 10),
@@ -116,7 +118,6 @@ export const createTask = async (req, res) => { // Создание задачи
 
   try {
     await Task.create(newTask);
-    tasks.push(newTask);
     return res.status(201).json(newTask);
   } catch (error) {
     console.error("createTask:", error);
@@ -128,29 +129,17 @@ export const createTask = async (req, res) => { // Создание задачи
 };
 
 export const deleteTask = async (req, res) => { // Удаление задачи
-  const id = Number(req.params?.id ?? req.body?.id); // Приведение айди к числу при его наличии
-  if (!id) {
-    return res.status(400).json({ message: "Invalid id" });
-  }
-
-  const index = tasks.findIndex((task) => task.id === id); // Поиск задачи
-  if (index === -1) {
-    return res.status(404).json({ message: "Task not found" });
-  }
+  const id = req.params.id; // id задачи
 
   try {
-    const deleteResult = await Task.deleteOne({ id });
+    const deleteResult = await Task.deleteOne({ _id: id });
     if (deleteResult.deletedCount === 0) {
       return res.status(404).json({ message: "Task not found in database" });
     }
-    const [removedTask] = tasks.splice(index, 1);
-    return res.status(200).json(removedTask);
+    return res.status(200).json({ message: "Task deleted" });
   } catch (error) {
     console.error("deleteTask:", error);
-    return res.status(500).json({
-      message: "Failed to delete task",
-      details: error.message,
-    });
+    return res.status(500).json({ message: "Failed to delete task" });
   }
 };
 

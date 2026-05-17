@@ -4,6 +4,7 @@
       <h2>ToDo-Tronk</h2>
       <h3 class="app-header__h3">Мой список задач:</h3>
       <AppButton variant="secondary" style="margin-left: auto;" @click="isActivePopup = true">+ Добавить задачу</AppButton>
+      <AppButton variant="secondary" @click="onLogout">Выйти</AppButton>
       <AppPopup v-model="isActivePopup" content-class="app-header__popup">
         <template #header>
           Добавить задачу
@@ -63,7 +64,14 @@ import AppInput from '../UI/AppInput.vue';
 import AppSelect from '../UI/AppSelect.vue';
 import type { TaskPriority } from '../pages/index/types';
 const isActivePopup = ref(false)
-const {createTask} = useTasks()
+const { createTask } = useTasks()
+
+const onLogout = () => {
+  if (import.meta.client) {
+    localStorage.removeItem('token')
+    window.location.reload()
+  }
+}
 
 const author = ref('')
 const authorError = ref('')

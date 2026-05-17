@@ -261,16 +261,6 @@ const onTaskDateInput = (value: string | number | null) => {
   taskDateError.value = validateTaskDate(formatted)
 }
 
-const toDisplayDate = (value: string) => {
-  const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/)
-  if (!isoMatch) {
-    return value
-  }
-
-  const [, year, month, day] = isoMatch
-  return `${day}.${month}.${year}`
-}
-
 const onUpdateTask = async () => {
   authorError.value = ''
   titleError.value = ''
