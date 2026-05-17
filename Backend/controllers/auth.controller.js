@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import users from "../data/users.data.js";
+import User from "../models/User.model.js";
 
 const SECRET = process.env.JWT_SECRET || "jwtsecret"; // Получение секрета из env
 
@@ -26,6 +27,7 @@ export const register = async (req, res) => {
   };
 
   users.push(user);
+  await User.create(user);
 
   return res.status(201).json({ message: "User created" });
 };

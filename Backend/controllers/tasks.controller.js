@@ -1,4 +1,5 @@
 import tasks from "../data/tasks.data.js";
+import Task from "../models/tasks.model.js";
 
 const ALLOWED_PRIORITIES = ["low", "medium", "high"]; // Допустимые приоритеты задач
 
@@ -113,8 +114,17 @@ export const createTask = async (req, res) => { // Создание задачи
     priority: ALLOWED_PRIORITIES.includes(payload.priority) ? payload.priority : "medium",
   };
 
-  tasks.push(newTask);
-  return res.status(201).json(newTask);
+  try {
+    await Task.create(newTask);
+    tasks.push(newTask);
+    return res.status(201).json(newTask);
+  } catch (error) {
+    console.error("createTask:", error);
+    return res.status(500).json({
+      message: "Failed to save task",
+      details: error.message,
+    });
+  }
 };
 
 export const deleteTask = async (req, res) => { // Удаление задачи
@@ -128,8 +138,20 @@ export const deleteTask = async (req, res) => { // Удаление задачи
     return res.status(404).json({ message: "Task not found" });
   }
 
-  const [removedTask] = tasks.splice(index, 1); // Удаление
-  return res.status(200).json(removedTask);
+  try {
+    const deleteResult = await Task.deleteOne({ id });
+    if (deleteResult.deletedCount === 0) {
+      return res.status(404).json({ message: "Task not found in database" });
+    }
+    const [removedTask] = tasks.splice(index, 1);
+    return res.status(200).json(removedTask);
+  } catch (error) {
+    console.error("deleteTask:", error);
+    return res.status(500).json({
+      message: "Failed to delete task",
+      details: error.message,
+    });
+  }
 };
 
 export const updateTask = async (req, res) => { // Обновление задачи
@@ -158,5 +180,14 @@ export const updateTask = async (req, res) => { // Обновление зада
     task.priority = payload.priority;
   } // ^ Обновление задачи при наличии полей в payload ^
 
-  return res.status(200).json(task);
+  try {
+    await Task.updateOne({ id }, task);
+    return res.status(200).json(task);
+  } catch (error) {
+    console.error("updateTask:", error);
+    return res.status(500).json({
+      message: "Failed to update task",
+      details: error.message,
+    });
+  }
 };
