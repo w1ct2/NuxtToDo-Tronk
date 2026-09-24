@@ -5,7 +5,7 @@ export type TaskPriority = 'low' | 'medium' | 'high';
 export type TaskSort = 'name' | 'author' | 'priority' | 'date'; // Доступные опции сортировки
 
 export interface TodoTask {
-  id: number;
+  id: string;
   title: string;
   description: string;
   dueDate: string;

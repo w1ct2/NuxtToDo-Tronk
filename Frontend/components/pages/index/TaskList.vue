@@ -26,7 +26,7 @@ import TaskItem from './TaskItem.vue';
 import type { TodoTask } from './types';
 
 const emit = defineEmits<{
-  (e: 'delete-task', id: number): void;
+  (e: 'delete-task', id: string): void;
 }>();
 
 defineProps({

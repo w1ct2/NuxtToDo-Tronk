@@ -76,7 +76,7 @@ export const useTasks = () => {
         }
     }
 
-    const createTask = async (task: TodoTask) => { // Создание задачи
+    const createTask = async (task: Omit<TodoTask, 'id'> & { id?: string }) => { // Создание задачи
         const response = await mutationRequest.execute({
             method: "POST",
             body: task,
@@ -85,8 +85,8 @@ export const useTasks = () => {
         return response
     }
 
-    const deleteTask = async (taskOrId: TodoTask | number) => { // Удаление задачи
-        const taskId = typeof taskOrId === 'number' ? taskOrId : taskOrId.id // проверка передается напрямую айди или через обьект
+    const deleteTask = async (taskOrId: TodoTask | string) => { // Удаление задачи
+        const taskId = typeof taskOrId === 'string' ? taskOrId : taskOrId.id
         const response = await mutationRequest.execute({
             method: "DELETE",
             url: `/tasks/${taskId}`,

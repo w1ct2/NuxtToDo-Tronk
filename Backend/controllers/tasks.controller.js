@@ -1,6 +1,20 @@
+import mongoose from "mongoose";
 import Task from "../models/tasks.model.js";
 
 const ALLOWED_PRIORITIES = ["low", "medium", "high"]; // Допустимые приоритеты задач
+
+const mapTask = (doc) => {
+  if (!doc) {
+    return doc;
+  }
+
+  const task = typeof doc.toObject === "function" ? doc.toObject() : { ...doc };
+  const { _id, __v, ...rest } = task;
+
+  return { id: String(_id), ...rest };
+};
+
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(String(id));
 
 export const getTasks = async (req, res) => { // ПОлучение задач
   const { status, search, sort, isPagin } = req.query // Получение статуса, поиска и настройки пагинации из query
@@ -90,7 +104,7 @@ export const getTasks = async (req, res) => { // ПОлучение задач
   }
 
   return res.status(200).json({
-    result: pagedResult, // Результат
+    result: pagedResult.map(mapTask), // Результат
     page: page,
     limit: limit,
     total: totalItems,
@@ -117,8 +131,8 @@ export const createTask = async (req, res) => { // Создание задачи
   };
 
   try {
-    await Task.create(newTask);
-    return res.status(201).json(newTask);
+    const created = await Task.create(newTask);
+    return res.status(201).json(mapTask(created));
   } catch (error) {
     console.error("createTask:", error);
     return res.status(500).json({
@@ -129,10 +143,14 @@ export const createTask = async (req, res) => { // Создание задачи
 };
 
 export const deleteTask = async (req, res) => { // Удаление задачи
-  const id = req.params.id; // id задачи
+  const id = req.params?.id ?? req.body?.id ?? req.body?.task?.id; // id задачи
+
+  if (!id || !isValidObjectId(id)) {
+    return res.status(400).json({ message: "Invalid id" });
+  }
 
   try {
-    const deleteResult = await Task.deleteOne({ _id: id });
+    const deleteResult = await Task.deleteOne({ _id: id, userId: req.user.userId });
     if (deleteResult.deletedCount === 0) {
       return res.status(404).json({ message: "Task not found in database" });
     }
@@ -144,34 +162,44 @@ export const deleteTask = async (req, res) => { // Удаление задачи
 };
 
 export const updateTask = async (req, res) => { // Обновление задачи
-  const id = Number(req.params?.id ?? req.body?.id ?? req.body?.task?.id); // Приведение айди к числу при его наличии
-  const payload = req.body?.task ?? req.body; // ДАнные 
+  const id = req.params?.id ?? req.body?.id ?? req.body?.task?.id;
+  const payload = req.body?.task ?? req.body;
 
-  if (!id) {
+  if (!id || !isValidObjectId(id)) {
     return res.status(400).json({ message: "Invalid id" });
-  }
-
-  const task = tasks.find((item) => item.id === id); // Поиск задачи
-  if (!task) {
-    return res.status(404).json({ message: "Task not found" });
   }
 
   if (!payload || typeof payload !== "object") {
     return res.status(400).json({ message: "Nothing to update" });
   }
 
-  if (payload.title !== undefined) task.title = String(payload.title).trim();
-  if (payload.description !== undefined) task.description = String(payload.description).trim();
-  if (payload.dueDate !== undefined) task.dueDate = payload.dueDate;
-  if (payload.isCompleted !== undefined) task.isCompleted = Boolean(payload.isCompleted);
-  if (payload.createdBy !== undefined) task.createdBy = String(payload.createdBy).trim();
+  const update = {};
+
+  if (payload.title !== undefined) update.title = String(payload.title).trim();
+  if (payload.description !== undefined) update.description = String(payload.description).trim();
+  if (payload.dueDate !== undefined) update.dueDate = payload.dueDate;
+  if (payload.isCompleted !== undefined) update.isCompleted = Boolean(payload.isCompleted);
+  if (payload.createdBy !== undefined) update.createdBy = String(payload.createdBy).trim();
   if (payload.priority !== undefined && ALLOWED_PRIORITIES.includes(payload.priority)) {
-    task.priority = payload.priority;
-  } // ^ Обновление задачи при наличии полей в payload ^
+    update.priority = payload.priority;
+  }
+
+  if (Object.keys(update).length === 0) {
+    return res.status(400).json({ message: "Nothing to update" });
+  }
 
   try {
-    await Task.updateOne({ id }, task);
-    return res.status(200).json(task);
+    const updated = await Task.findOneAndUpdate(
+      { _id: id, userId: req.user.userId },
+      { $set: update },
+      { new: true, lean: true },
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    return res.status(200).json(mapTask(updated));
   } catch (error) {
     console.error("updateTask:", error);
     return res.status(500).json({

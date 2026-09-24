@@ -40,7 +40,6 @@ export const login = async (req, res) => {
   }
 
   const user = await User.findOne({ email }) // Есть ли пользователь с email
-  console.log("user in login", user);
   if (!user) {
     return res.status(400).json({ message: "User not found" });
   }

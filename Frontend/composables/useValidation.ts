@@ -147,3 +147,33 @@ export const validators = {
         test: (value) => (value === true ? null : message),
     }),
 }
+
+/* Пример использования
+    const validation = useValidation( // валидация формы
+        () => ({
+            userEmail: userEmail.value, // ref переменные 
+            userPassword: userPassword.value,
+            userPasswordConfirm: userPasswordConfirm.value,
+        }),
+        {
+            userEmail: [ // Поле проверки
+                validators.required('Введите email'), //Нужные типы проверок
+                validators.email('Введите корректный email'),
+            ],
+            userPassword: [
+                validators.required('Введите пароль'),
+                validators.minLength(6, 'Пароль должен быть минимум 6 символов'),
+            ],
+            userPasswordConfirm: [
+                {
+                    name: 'passwordConfirm',
+                    test: (value, ctx) => { // проверка совпадения паролей
+                        if (authTab.value === 'login') return null // если таб входа то не проверяем
+                        if (!value) return 'Повторите пароль'
+                        return value === ctx.form.userPassword ? null : 'Пароли не совпадают'
+                    },
+                },
+            ],
+        },
+    )
+*/

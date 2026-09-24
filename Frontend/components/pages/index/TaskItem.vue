@@ -107,7 +107,7 @@ const props = defineProps({
   },
 });
 const emit = defineEmits<{
-  (e: 'deleted', id: number): void;
+  (e: 'deleted', id: string): void;
 }>();
 
 const {updateTask, deleteTask, loadTasks} = useTasks()
@@ -187,7 +187,7 @@ const description = ref(props.task.description)
 const descriptionError = ref('')
 const taskDate = ref(props.task.dueDate)
 const taskDateError = ref('')
-const priority = ref<TaskPriority>('medium')
+const priority = ref<TaskPriority>(props.task.priority)
 
 const allowedControlKeys = new Set([
   'Backspace',

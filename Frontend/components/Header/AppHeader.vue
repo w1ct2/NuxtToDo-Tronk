@@ -185,9 +185,7 @@ const onCreateNewTask = async () => {
   }
 
   const task = {
-    id: Date.now(),
     isCompleted: false,
-
     title: title.value,
     description: description.value,
     createdBy: author.value,
